@@ -1,34 +1,61 @@
 import { useState } from "react"
+import ListItem from "./components/ListItem";
+import NewListItemButton from "./components/NewListItemButton";
+import Swal from 'sweetalert2'
 
 function App() {
-  const [listItems, setlistItems] = useState([
+  const [listItems, setListItems] = useState([
     {
-      id:"1",
-      name:"Tortillas",
+      id: "1",
+      name: "Tortillas",
       quantity: 2,
-      unit: "kg",
+      unit: "Kg",
       checked: false,
     },
     {
-      id:"2",
-      name:"Aceite",
+      id: "2",
+      name: "Aceite",
       quantity: 900,
       unit: "ml",
       checked: false,
     },
-    
   ]);
 
+  const handleNewListItemButton = async () => {
+    const {value} = await Swal.fire({
+      title: "New Item Information",
+      html: `<input type='text' id='name' name='name' class='swal2-input' placeholder='Item' />
+              <input type='number' id='quantity' name='quantity' class='swal2-input' placeholder='Qty'/>
+              <input type='text' id='unit' name='unit' class='swal2-input' placeholder='unit'/>`,
+      confirmButtonText: "Add item",
+      showCloseButton: true,
+      showCancelButton: true,
+      focusConfirm: false,
+      cancelButtonText: "Dismiss",
+      preConfirm: () => {
+        const name = Swal.getPopup().querySelector('#name').value;
+        const quantity = Swal.getPopup().querySelector('#quantity').value;
+        const unit = Swal.getPopup().querySelector('#unit').value;
+        if (!name || !quantity || !unit) {
+          Swal.showValidationMessage('Please enter an item full information');
+        }
+        return {name, quantity, unit};
+      },
+    })
+    setListItems([
+      ...listItems, {id: (listItems.length + 1).toString(), ...value, checked: false}
+    ])
+  }
   const handleCheckboxChanhe = (e) => {
-   const newList = listItems.map(item => {
-    if(item.id === e.target.name){
-      item.checked = !item.checked;
-    } 
+    const newList = listItems.map(item => {
+      if (item.id === e.target.name) {
+        item.checked = !item.checked;
+      }
 
-    return item;
-   })
-    setlistItems(newList);
+      return item;
 
+    })
+    setListItems(newList);
   }
 
   return (
@@ -36,95 +63,30 @@ function App() {
     <div className="row">
       <div className="col-2"></div>
       <div className="col">
-       <h1>Shopping List</h1>
-       <br />
+        <h1>Shopping List</h1>
+        <br />
       </div>
       <div className="col-2 text-end">
-        <button type="button" className="btn btn-outline-success btn-sm mt-1">
-          <i class="bi bi-plus-circle-fill"></i>
-        </button>
+        <NewListItemButton handleNewListItemButton={handleNewListItemButton}/>
       </div>
     </div>
     <hr />
-    <div className="row">
-      <div className="col-1">
-        <input
-          checked={listItems[0].checked} 
-          name={listItems[0].id}
-          onChange={(e)=>handleCheckboxChanhe(e)}
-          type="checkbox"
-          
+    {
+      listItems.map((ListItems) => (
+        <ListItem 
+          id={ListItems.id}
+          name={ListItems.name} 
+          quantity={ListItems.quantity} 
+          unit={ListItems.unit} 
+          checked={ListItems.checked} 
+          handleCheckboxChanhe={handleCheckboxChanhe}
         />
-      </div>
-      <div className="col text-start">
-      {
-      listItems[0].checked ?
-          <s>{`${listItems[0].quantity} ${listItems[0].unit}`} </s> :
-          `${listItems[0].quantity} ${listItems[0].unit}`
-          }
-      </div>
-      <div className="col-5 col-md-7 text-start"
-      style={{textDecoration: listItems[0].checked && "line-through"}}
-      >
-        {
-          listItems[0].name
-        }
-         
-      </div>
-      <div className="col-4 col-md-3 btn-group btn-group-sm text-end" role="group">
-        <button className="btn btn-outline-primary">
-          <i className="bi bi-pencil-square"></i>
-          </button>
-        <button className="btn btn-outline-info">
-          <i className="bi bi-files"></i>
-          </button>
-        <button className="btn btn-outline-danger">
-          <i className="bi bi-trash2-fill"></i>
-          </button>
-      </div>
-    </div>
-    <div className="row">
-      <div className="col-1">
-        <input 
-        checked={listItems[1].checked} 
-        name={listItems[1].id}
-        onChange={(e)=>handleCheckboxChanhe(e)}
-        type="checkbox"
-         
-        />
-      </div>
-      <div className="col text-start">
-
-      {listItems[1].checked ?
-       <s>1 {`${listItems[1].quantity} ${listItems[1].unit}`} </s> :
-       `${listItems[1].quantity} ${listItems[1].unit}`
-       }
-
-
-      </div>
-      <div className="col-5 col-md-7 text-start"
-      style={{textDecoration: listItems[1].checked && "line-through"}}
-      >
-      {listItems[1].name}
-      </div>
-      <div className="col-4 col-md-3 btn-group btn-group-sm text-end" role="group">
-        <button className="btn btn-outline-primary">
-          <i className="bi bi-pencil-square"></i>
-          </button>
-        <button className="btn btn-outline-info">
-          <i className="bi bi-files"></i>
-          </button>
-        <button className="btn btn-outline-danger">
-          <i className="bi bi-trash2-fill"></i>
-          </button>
-      </div>
-    </div>
+      ))
+    }
     <hr />
     <div className="row">
       <div className="col text-end">
-      <button type="button" className="btn btn-outline-success btn-sm mt-1">
-          <i class="bi bi-plus-circle-fill"></i>
-        </button>
+        <NewListItemButton handleNewListItemButton={handleNewListItemButton}/>
       </div>
     </div>
   </div>
