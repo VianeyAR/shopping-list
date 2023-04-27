@@ -2,31 +2,34 @@ import { useState } from "react"
 import ListItem from "./components/ListItem";
 import NewListItemButton from "./components/NewListItemButton";
 import Swal from 'sweetalert2'
+import ClearListButtom from "./components/ClearListButtom";
+import {v4 as uuidv4} from 'uuid'
 
 function App() {
-  const [listItems, setListItems] = useState([
-    {
-      id: "1",
-      name: "Tortillas",
-      quantity: 2,
-      unit: "Kg",
-      checked: false,
-    },
-    {
-      id: "2",
-      name: "Aceite",
-      quantity: 900,
-      unit: "ml",
-      checked: false,
-    },
-  ]);
+  const [listItems, setListItems] = useState(
+    JSON.parse (localStorage.getItem("listItems")) || []
+
+  );
 
   const handleNewListItemButton = async () => {
     const {value} = await Swal.fire({
       title: "New Item Information",
-      html: `<input type='text' id='name' name='name' class='swal2-input' placeholder='Item' />
-              <input type='number' id='quantity' name='quantity' class='swal2-input' placeholder='Qty'/>
-              <input type='text' id='unit' name='unit' class='swal2-input' placeholder='unit'/>`,
+      html: `<input type='text' 
+            id='name' name='name' 
+            class='swal2-input' 
+            placeholder='Item' 
+            />
+            <input type='number' 
+            id='quantity' 
+            name='quantity' 
+            class='swal2-input' 
+            placeholder='Qty'
+            />
+            <input type='text' 
+            id='unit' name='unit' 
+            class='swal2-input' 
+            placeholder='unit'
+            />`,
       confirmButtonText: "Add item",
       showCloseButton: true,
       showCancelButton: true,
@@ -42,19 +45,27 @@ function App() {
         return {name, quantity, unit};
       },
     })
-    setListItems([
-      ...listItems, {id: (listItems.length + 1).toString(), ...value, checked: false}
-    ])
+    if(!value.name || !value.quantity || !value.unit) return
+
+    const newList = [
+      ...listItems,
+      {id: uuidv4(),...value, checked: false}
+    ]
+
+   localStorage.setItem("listItems", JSON.stringify(newList));
+   setListItems(newList);
+
   }
   const handleCheckboxChanhe = (e) => {
     const newList = listItems.map(item => {
       if (item.id === e.target.name) {
         item.checked = !item.checked;
       }
-
       return item;
 
     })
+
+    localStorage.setItem("listItems", JSON.stringify(newList));
     setListItems(newList);
   }
 
@@ -67,27 +78,41 @@ function App() {
         <br />
       </div>
       <div className="col-2 text-end">
+        <ClearListButtom setListItems={setListItems}/>
         <NewListItemButton handleNewListItemButton={handleNewListItemButton}/>
       </div>
     </div>
     <hr />
     {
+      listItems.length === 0 && (
+      <h3>
+        Empty list...
+      </h3>
+      )
+    }
+    {
       listItems.map((ListItems) => (
         <ListItem 
-          id={ListItems.id}
-          name={ListItems.name} 
-          quantity={ListItems.quantity} 
-          unit={ListItems.unit} 
-          checked={ListItems.checked} 
+        key={listItems.id}
+          item={ListItems}
+          listItems={listItems}
+          setListItems={setListItems}
           handleCheckboxChanhe={handleCheckboxChanhe}
         />
       ))
     }
     <hr />
     <div className="row">
-      <div className="col text-end">
+{
+  listItems.length >= 5 && (
+    <div className="col text-end">
+        <ClearListButtom setListItems={setListItems}/>
         <NewListItemButton handleNewListItemButton={handleNewListItemButton}/>
       </div>
+  )
+}
+
+      
     </div>
   </div>
   )
